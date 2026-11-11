@@ -6,6 +6,7 @@
   var API = window.GATE_API;
   var app = document.getElementById('app');
   var cfg = null, messaging = null, swReg = null, timer = null, highlight = null, busy = false;
+  var seenIds = null; // visitor requests already shown; a new one plays the chime
 
   var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
@@ -44,6 +45,42 @@
     document.body.appendChild(t);
     setTimeout(function () { t.remove(); }, 3000);
   }
+  /* ---------------------------------------------------- chime (app open) */
+  var actx = null;
+  function audioCtx() {
+    if (!actx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      try { actx = new AC(); } catch (e) { return null; }
+    }
+    return actx;
+  }
+  function unlockAudio() { var c = audioCtx(); if (c && c.state === 'suspended') c.resume(); }
+  document.addEventListener('touchstart', unlockAudio, { passive: true });
+  document.addEventListener('click', unlockAudio);
+
+  /** Two-tone "ding-dong", twice, plus a vibration on Android. */
+  function chime(force) {
+    if (!force && store.get('chime') === 'off') return;
+    if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+    var c = audioCtx();
+    if (!c) return;
+    if (c.state === 'suspended') c.resume();
+    var t = c.currentTime + 0.05;
+    [[659.25, 0], [523.25, 0.55], [659.25, 1.3], [523.25, 1.85]].forEach(function (n) {
+      [[1, 0.45], [2, 0.12]].forEach(function (h) { // note + a soft overtone for a bell-like sound
+        var o = c.createOscillator(), g = c.createGain();
+        o.type = 'sine';
+        o.frequency.value = n[0] * h[0];
+        g.gain.setValueAtTime(0.0001, t + n[1]);
+        g.gain.exponentialRampToValueAtTime(h[1], t + n[1] + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + n[1] + 0.5);
+        o.connect(g); g.connect(c.destination);
+        o.start(t + n[1]); o.stop(t + n[1] + 0.55);
+      });
+    });
+  }
+
   function api(a, body) {
     return fetch(API, { method: 'POST', body: JSON.stringify(Object.assign({ a: a }, body || {})) })
       .then(function (r) { return r.json(); })
@@ -114,7 +151,7 @@
 
   function onForegroundMessage(payload) {
     var n = (payload && payload.notification) || {};
-    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    if (payload && payload.data && payload.data.kind === 'test') chime();
     if (swReg && Notification.permission === 'granted' && n.title) {
       swReg.showNotification(n.title, { body: n.body, icon: 'icon-192.png', tag: (payload.data && payload.data.id) || 'gate' });
     }
@@ -174,14 +211,18 @@
 
   /* ------------------------------------------------------------------- home */
   function home() {
+    seenIds = null;
     show('<div class="top"><div><h1>Flat ' + esc(store.get('flat')) + '</h1><p class="sub" id="who">' + esc(store.get('name')) +
       ' · ' + esc(cfg.society) + '</p></div></div>' +
       '<div id="nb"></div>' +
       '<div id="pending"><div class="empty">Loading…</div></div>' +
       '<div class="card"><h2>Recent visitors</h2><ul class="recent" id="recent"><li class="tiny">Loading…</li></ul></div>' +
+      alertsCard() +
       '<p class="tiny" style="text-align:center" id="st"></p>' +
       '<p style="text-align:center"><button class="linkbtn" id="leave">Leave Flat ' + esc(store.get('flat')) + ' on this phone</button></p>');
     $('leave').addEventListener('click', leave);
+    $('chime').addEventListener('change', function () { store.set('chime', $('chime').checked ? null : 'off'); });
+    $('hear').addEventListener('click', function () { unlockAudio(); chime(true); });
     renderNotifBanner();
     refresh();
     clearInterval(timer);
@@ -211,6 +252,9 @@
   function render(h) {
     var p = $('pending'), rc = $('recent');
     if (!p) return;
+    var ids = h.pending.map(function (v) { return String(v.id); });
+    if (seenIds && ids.some(function (id) { return seenIds.indexOf(id) < 0; }) && document.visibilityState !== 'hidden') chime();
+    seenIds = ids.concat(seenIds || []);
     if (!h.pending.length) {
       p.innerHTML = '<div class="card empty">No visitors waiting right now.</div>';
     } else {
@@ -253,6 +297,21 @@
       Array.prototype.forEach.call(card.querySelectorAll('button'), function (b) { b.disabled = false; });
       if (e.code === 'GONE') refresh();
     });
+  }
+
+  function alertsCard() {
+    var tone = isIOS
+      ? '<p class="note">iPhones use the standard notification sound for web apps; it can\'t be changed. Make sure ' +
+        '<b>Settings → Notifications → Gate</b> has <b>Sounds</b> and <b>Banners</b> turned on, and that Focus or ' +
+        'Silent mode isn\'t muting it.</p>'
+      : '<ol class="steps"><li>Tap <b>Send a test</b> above, or wait for a gate notification.</li>' +
+        '<li><b>Long-press</b> the notification when it appears, then tap the <b>gear</b> or <b>Settings</b>.</li>' +
+        '<li>Tap <b>Sound</b> and pick a tone you\'ll recognise. Only gate notifications use it.</li></ol>';
+    return '<div class="card"><h2>Alerts</h2>' +
+      '<div class="toggle"><label><input type="checkbox" id="chime"' + (store.get('chime') === 'off' ? '' : ' checked') + '> ' +
+      'Chime and vibrate when a visitor arrives while the app is open</label>' +
+      '<button class="linkbtn" id="hear">Hear it</button></div>' +
+      '<details><summary>Set a notification tone</summary>' + tone + '</details></div>';
   }
 
   function renderNotifBanner() {
