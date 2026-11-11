@@ -220,6 +220,8 @@
           (v.photo ? '<img src="' + v.photo + '" alt="Visitor photo">' : '<p class="note">Photo not available.</p>') +
           '<div class="vname">' + esc(v.name) + '</div>' +
           '<div class="vline">' + esc(v.phone) + '</div>' +
+          (v.purpose ? '<div class="purpose"><span>Purpose</span>' + esc(v.purpose) + '</div>' : '') +
+          (v.voice ? '<div class="vnote"><span>Voice note</span><audio controls preload="metadata" src="' + v.voice + '"></audio></div>' : '') +
           '<div class="vline">Waiting since ' + fmtTime(v.createdMs) + ' (' + ago(v.createdMs) + ')</div>' +
           '<div class="row"><button class="btn red" data-id="' + v.id + '" data-a="D">✖ Deny</button>' +
           '<button class="btn green" data-id="' + v.id + '" data-a="A">✓ Approve</button></div></div>';
@@ -231,7 +233,8 @@
     }
     rc.innerHTML = h.recent.length ? h.recent.map(function (v) {
       var label = { APPROVED: '✓ Approved', DENIED: '✖ Denied', EXPIRED: 'No answer' }[v.status] || v.status;
-      return '<li><div><b>' + esc(v.name) + '</b><div class="tiny">' + fmtDay(v.createdMs) + ', ' + fmtTime(v.createdMs) +
+      return '<li><div><b>' + esc(v.name) + '</b>' + (v.purpose ? ' · ' + esc(v.purpose) : '') +
+        '<div class="tiny">' + fmtDay(v.createdMs) + ', ' + fmtTime(v.createdMs) +
         (v.by ? ' · ' + esc(v.by) : '') + '</div></div><span class="st ' + esc(v.status) + '">' + label + '</span></li>';
     }).join('') : '<li class="tiny">No visitors yet.</li>';
   }
