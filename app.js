@@ -7,6 +7,19 @@
   var app = document.getElementById('app');
   var cfg = null, messaging = null, swReg = null, timer = null, highlight = null, busy = false;
   var seenIds = null; // visitor requests already shown; a new one plays the chime
+  var passDefault = 30;
+  var PASS_CHOICES = [['15', '15 min'], ['30', '30 min'], ['60', '1 hour'], ['180', '3 hours'], ['m', 'Until midnight']];
+  function passChoice() {
+    var saved = store.get('passmin');
+    if (saved && PASS_CHOICES.some(function (c) { return c[0] === saved; })) return saved;
+    var d = String(passDefault);
+    return PASS_CHOICES.some(function (c) { return c[0] === d; }) ? d : '30';
+  }
+  function choiceMinutes(c) {
+    if (c !== 'm') return Number(c);
+    var end = new Date(); end.setHours(23, 59, 0, 0);
+    return Math.max(5, Math.round((end - Date.now()) / 60000));
+  }
 
   var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
@@ -236,6 +249,7 @@
     return api('home', { key: store.get('key') }).then(function (h) {
       busy = false;
       if (h.flat !== store.get('flat')) store.set('flat', h.flat);
+      if (h.passDefaultMin) passDefault = h.passDefaultMin;
       render(h);
       if ($('st')) $('st').textContent = 'Updated ' + fmtTime(Date.now());
     }).catch(function (e) {
@@ -267,29 +281,46 @@
           (v.purpose ? '<div class="purpose"><span>Purpose</span>' + esc(v.purpose) + '</div>' : '') +
           (v.voice ? '<div class="vnote"><span>Voice note</span><audio controls preload="metadata" src="' + v.voice + '"></audio></div>' : '') +
           '<div class="vline">Waiting since ' + fmtTime(v.createdMs) + ' (' + ago(v.createdMs) + ')</div>' +
+          '<div class="validfor"><span>If approved, pass valid for</span><div class="pchips">' +
+            PASS_CHOICES.map(function (c) {
+              return '<button type="button" class="pchip' + (c[0] === passChoice() ? ' on' : '') + '" data-p="' + c[0] + '">' + c[1] + '</button>';
+            }).join('') + '</div></div>' +
           '<div class="row"><button class="btn red" data-id="' + v.id + '" data-a="D">✖ Deny</button>' +
           '<button class="btn green" data-id="' + v.id + '" data-a="A">✓ Approve</button></div></div>';
       }).join('');
       Array.prototype.forEach.call(p.querySelectorAll('button[data-id]'), function (b) {
-        b.addEventListener('click', function () { decide(b.getAttribute('data-id'), b.getAttribute('data-a')); });
+        b.addEventListener('click', function () {
+          var card = $('v' + b.getAttribute('data-id'));
+          var on = card.querySelector('.pchip.on');
+          decide(b.getAttribute('data-id'), b.getAttribute('data-a'), on ? on.getAttribute('data-p') : passChoice());
+        });
+      });
+      Array.prototype.forEach.call(p.querySelectorAll('.pchip'), function (c) {
+        c.addEventListener('click', function () {
+          Array.prototype.forEach.call(c.parentNode.querySelectorAll('.pchip'), function (x) { x.classList.toggle('on', x === c); });
+          store.set('passmin', c.getAttribute('data-p'));
+        });
       });
       if (highlight && $('v' + highlight)) $('v' + highlight).scrollIntoView({ block: 'start' });
     }
     rc.innerHTML = h.recent.length ? h.recent.map(function (v) {
       var label = { APPROVED: '✓ Approved', DENIED: '✖ Denied', EXPIRED: 'No answer' }[v.status] || v.status;
+      if (v.status === 'APPROVED' && v.untilMs) label += '<span class="tiny" style="display:block;text-align:right;font-weight:400">' +
+        (v.untilMs > Date.now() ? 'until ' : 'ended ') + fmtTime(v.untilMs) + '</span>';
       return '<li><div><b>' + esc(v.name) + '</b>' + (v.purpose ? ' · ' + esc(v.purpose) : '') +
         '<div class="tiny">' + fmtDay(v.createdMs) + ', ' + fmtTime(v.createdMs) +
         (v.by ? ' · ' + esc(v.by) : '') + '</div></div><span class="st ' + esc(v.status) + '">' + label + '</span></li>';
     }).join('') : '<li class="tiny">No visitors yet.</li>';
   }
 
-  function decide(id, action) {
+  function decide(id, action, choice) {
     var card = $('v' + id);
     Array.prototype.forEach.call(card.querySelectorAll('button'), function (b) { b.disabled = true; });
-    api('decide', { key: store.get('key'), id: id, action: action }).then(function (r) {
+    api('decide', { key: store.get('key'), id: id, action: action, validMin: choiceMinutes(choice || passChoice()) }).then(function (r) {
       if (r.status === 'EXPIRED') toast('This request had already expired.');
       else if (r.already) toast('Already ' + r.status.toLowerCase() + ' by ' + r.by);
-      else toast(r.status === 'APPROVED' ? 'Approved. The visitor\'s screen is now green.' : 'Denied. The visitor has been told.');
+      else toast(r.status === 'APPROVED' ? 'Approved until ' + fmtTime(r.untilMs) + '. The visitor\'s screen is now green.'
+                                         : 'Denied. The visitor has been told.');
       highlight = null;
       refresh();
     }).catch(function (e) {

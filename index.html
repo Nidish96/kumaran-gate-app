@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0F766E">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Gate">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>Gate</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon-192.png">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <style>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F766E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gate">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Gate</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
   * { box-sizing: border-box; }
   body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #111827; background: #F3F4F6;
          padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
@@ -66,15 +66,20 @@
   .toggle .linkbtn { color: #0F766E; font-weight: 600; white-space: nowrap; }
   details { margin-top: 14px; border-top: 1px solid #F3F4F6; padding-top: 12px; }
   summary { font-weight: 600; cursor: pointer; padding: 4px 0; }
+  .validfor { margin-top: 12px; }
+  .validfor span { display: block; font-size: 14px; color: #4B5563; margin-bottom: 6px; }
+  .pchips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pchip { border: 1px solid #D1D5DB; background: #fff; border-radius: 999px; padding: 9px 12px; font-size: 15px; cursor: pointer; color: #111827; }
+  .pchip.on { background: #16A34A; border-color: #16A34A; color: #fff; font-weight: 600; }
   .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #111827; color: #fff; padding: 12px 18px;
            border-radius: 999px; font-weight: 600; z-index: 10; max-width: 90%; text-align: center; }
-    </style>
-  </head>
-  <body>
-    <div id="app"><div class="empty">Loading…</div></div>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
-    <script src="config.js"></script>
-    <script src="app.js"></script>
-  </body>
+</style>
+</head>
+<body>
+<div id="app"><div class="empty">Loading…</div></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
 </html>
