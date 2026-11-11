@@ -12,15 +12,22 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #111827; background: #F3F4F6;
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans Tamil", "Noto Sans Devanagari", Arial, sans-serif; color: #111827; background: #F3F4F6;
          padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
   #app { max-width: 520px; margin: 0 auto; padding: 16px; }
   .top { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 14px; }
   h1 { font-size: 22px; margin: 0; }
   h2 { font-size: 18px; margin: 0 0 10px; }
   .sub { color: #6B7280; margin: 2px 0 0; font-size: 14px; }
+  .langs { display: flex; gap: 6px; justify-content: center; margin: 0 0 12px; }
+  .langs button { flex: 1; max-width: 140px; border: 2px solid #0F766E; background: #fff; color: #0F766E; border-radius: 999px;
+                  padding: 8px 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .langs button.on { background: #0F766E; color: #fff; }
+  button, input { font-family: inherit; }
   .card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
   label.f { display: block; font-weight: 600; margin: 12px 0 6px; }
   input { width: 100%; font-size: 18px; padding: 12px; border: 1px solid #D1D5DB; border-radius: 10px; background: #fff; }
