@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F766E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gate">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Gate</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #111827; background: #F3F4F6;
+         padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  #app { max-width: 520px; margin: 0 auto; padding: 16px; }
+  .top { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 14px; }
+  h1 { font-size: 22px; margin: 0; }
+  h2 { font-size: 18px; margin: 0 0 10px; }
+  .sub { color: #6B7280; margin: 2px 0 0; font-size: 14px; }
+  .card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  label.f { display: block; font-weight: 600; margin: 12px 0 6px; }
+  input { width: 100%; font-size: 18px; padding: 12px; border: 1px solid #D1D5DB; border-radius: 10px; background: #fff; }
+  .btn { display: block; width: 100%; text-align: center; font-size: 18px; font-weight: 700; padding: 14px; border: 0;
+         border-radius: 12px; margin-top: 14px; cursor: pointer; color: #fff; background: #0F766E; text-decoration: none; }
+  .btn:disabled { opacity: .5; }
+  .btn.small { font-size: 15px; padding: 10px; margin-top: 8px; }
+  .btn.grey { background: #E5E7EB; color: #111827; }
+  .btn.green { background: #16A34A; }
+  .btn.red { background: #DC2626; }
+  .row { display: flex; gap: 10px; }
+  .row .btn { flex: 1; }
+  .err { color: #B91C1C; font-weight: 600; margin-top: 10px; min-height: 1em; }
+  .note { color: #4B5563; font-size: 15px; line-height: 1.45; }
+  .tiny { color: #9CA3AF; font-size: 12px; }
+  .banner { border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; font-size: 15px; }
+  .banner.warn { background: #FEF3C7; color: #78350F; }
+  .banner.bad { background: #FEE2E2; color: #991B1B; }
+  .banner.ok { background: #DCFCE7; color: #14532D; display: flex; justify-content: space-between; align-items: center; }
+  .banner .btn { margin-top: 10px; }
+  .linkbtn { background: none; border: 0; color: inherit; text-decoration: underline; font-size: 14px; cursor: pointer; padding: 0; }
+  .visitor { border: 3px solid #F59E0B; }
+  .visitor.hl { animation: pulse 1s ease-in-out 3; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(245,158,11,.35); } }
+  .visitor img { width: 100%; max-height: 380px; object-fit: contain; border-radius: 12px; background: #F9FAFB; }
+  .vname { font-size: 22px; font-weight: 800; margin-top: 10px; }
+  .vline { font-size: 16px; color: #374151; margin-top: 2px; }
+  .empty { text-align: center; color: #6B7280; padding: 18px 0 6px; }
+  .recent { list-style: none; padding: 0; margin: 0; }
+  .recent li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F3F4F6; font-size: 15px; }
+  .recent li:last-child { border-bottom: 0; }
+  .st { font-weight: 700; white-space: nowrap; }
+  .st.APPROVED { color: #15803D; } .st.DENIED { color: #B91C1C; } .st.EXPIRED { color: #6B7280; }
+  .steps { padding-left: 20px; line-height: 1.7; }
+  .code { font-size: 24px; font-weight: 800; letter-spacing: 2px; text-align: center; background: #F3F4F6; border-radius: 10px; padding: 10px; margin: 10px 0; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #111827; color: #fff; padding: 12px 18px;
+           border-radius: 999px; font-weight: 600; z-index: 10; max-width: 90%; text-align: center; }
+</style>
+</head>
+<body>
+<div id="app"><div class="empty">Loading…</div></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
